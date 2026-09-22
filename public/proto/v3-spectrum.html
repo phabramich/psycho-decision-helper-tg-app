@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Призма · Спектр — прототип</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050508; --card:rgba(255,255,255,.05); --line:rgba(255,255,255,.12);
+  --text:#eceaf6; --dim:#8a86a8;
+  --A:#5eead4; --B:#f0abfc;
+  --met:#4ade80; --unmet:#fb7185; --val:#a78bfa;
+  --e-out:cubic-bezier(.16,1,.3,1); --e-spring:cubic-bezier(.34,1.56,.64,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:"Space Grotesk",system-ui,sans-serif;overflow:hidden}
+.app{max-width:430px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;padding:14px 16px 10px}
+header{display:flex;justify-content:space-between;align-items:baseline}
+.logo{font-family:"JetBrains Mono";font-size:12px;font-weight:700;letter-spacing:.2em}
+.logo i{font-style:normal;background:linear-gradient(90deg,var(--A),var(--val),var(--B));-webkit-background-clip:text;background-clip:text;color:transparent}
+.step{font-family:"JetBrains Mono";font-size:11px;color:var(--dim)}
+.dilemma{margin-top:12px;font-size:20px;font-weight:700;line-height:1.3;overflow:visible;padding-bottom:.18em}
+.dilemma em{font-style:normal;border-bottom:1px dashed var(--dim);color:var(--dim)}
+
+/* --- сцена призмы --- */
+.scene{flex:1;display:flex;flex-direction:column;min-height:0}
+.prismbox{height:150px;position:relative}
+.prismbox svg{width:100%;height:100%;display:block}
+.zone-row{flex:1;display:flex;gap:10px;min-height:0}
+.zone{flex:1;border:1px dashed var(--line);border-radius:16px;padding:10px;overflow-y:auto;
+  transition:border-color .2s var(--e-out),box-shadow .2s var(--e-out),background .2s var(--e-out);position:relative}
+.zone .zlabel{font-family:"JetBrains Mono";font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.zone.a .zlabel{color:var(--A)}.zone.b .zlabel{color:var(--B)}
+.zone.a.hot{border-color:var(--A);box-shadow:inset 0 0 30px -12px var(--A)}
+.zone.b.hot{border-color:var(--B);box-shadow:inset 0 0 30px -12px var(--B)}
+.facets{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.facet{clip-path:polygon(50% 0,100% 100%,0 100%);width:60px;height:52px;border:none;cursor:pointer;
+  font:600 8.5px/1.1 "Space Grotesk";color:#050508;display:flex;align-items:flex-end;justify-content:center;
+  padding:0 6px 9px;animation:appear .45s var(--e-spring)}
+.zone.a .facet{background:linear-gradient(165deg,#c8fff3,var(--A))}
+.zone.b .facet{background:linear-gradient(165deg,#fbe0ff,var(--B))}
+@keyframes appear{from{transform:scale(.4) rotate(-14deg);opacity:0}}
+.facet .dots{position:absolute;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:2px}
+.facet .dots i{width:5px;height:5px;border-radius:50%}
+
+/* линза-панель внутри зоны */
+.lenspane{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;animation:fade .2s var(--e-out)}
+.lenspane .lp-t{font-size:12px;font-weight:700;margin-bottom:8px}
+@keyframes fade{from{opacity:0}}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;
+  padding:6px 11px;font:500 12px "Space Grotesk";cursor:pointer;transition:transform .12s var(--e-out),border-color .12s var(--e-out)}
+.pill:active{transform:scale(.94)}
+.pill.on.met{border-color:var(--met);color:var(--met)}
+.pill.on.unmet{border-color:var(--unmet);color:var(--unmet)}
+.pill.on.val{border-color:var(--val);color:var(--val)}
+.sect{font-family:"JetBrains Mono";font-size:9px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin:10px 0 6px}
+
+/* --- лоток --- */
+.tray{border-top:1px solid var(--line);padding:10px 0}
+.tray-hint{font-family:"JetBrains Mono";font-size:11px;color:var(--dim);margin-bottom:8px}
+.chips{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;width:84px;height:74px;border:none;cursor:grab;touch-action:none;
+  clip-path:polygon(50% 4%,97% 93%,3% 93%);
+  background:linear-gradient(160deg,rgba(255,255,255,.9),rgba(255,255,255,.25) 55%,rgba(167,139,250,.4));
+  color:#050508;font:700 10px/1.15 "Space Grotesk";display:flex;align-items:flex-end;justify-content:center;padding:0 8px 13px;
+  transition:opacity .15s var(--e-out)}
+.chip.used{opacity:.22;pointer-events:none}
+.ghost{position:fixed;z-index:60;pointer-events:none;transform:translate(-50%,-70%) scale(1.08);
+  filter:drop-shadow(0 0 22px rgba(167,139,250,.8))}
+.cta{border:none;border-radius:14px;padding:14px;font:700 14px "Space Grotesk";cursor:pointer;color:#050508;
+  background:linear-gradient(90deg,var(--A),var(--B));transition:transform .12s var(--e-out)}
+.cta:active{transform:scale(.97)}
+.verdict{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;animation:fade .3s var(--e-out)}
+.verdict[hidden]{display:none}
+.verdict .big{font-size:24px;font-weight:700;text-align:center;overflow:visible;padding-bottom:.18em}
+.verdict p{color:var(--dim);text-align:center;font-size:13px;line-height:1.6}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header><div class="logo">ПРИЗМА<i>◭</i></div><div class="step">прототип «Спектр»</div></header>
+  <div class="dilemma">делиться ли <em>своим творчеством</em> публично</div>
+  <div class="scene">
+    <div class="prismbox">
+      <svg viewBox="0 0 400 150" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="beamIn" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".9"/>
+          </linearGradient>
+          <linearGradient id="beamA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#5eead4" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="beamB" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f0abfc"/><stop offset="1" stop-color="#f0abfc" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <line x1="200" y1="0" x2="200" y2="66" stroke="url(#beamIn)" stroke-width="3"/>
+        <polygon points="200,58 228,110 172,110" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.7)" stroke-width="1.5"/>
+        <line id="rayA" x1="186" y1="104" x2="60" y2="150" stroke="url(#beamA)" stroke-width="4" stroke-linecap="round"/>
+        <line id="rayB" x1="214" y1="104" x2="340" y2="150" stroke="url(#beamB)" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="zone-row">
+      <div class="zone a" id="zoneA"><div class="zlabel">А · делюсь <span id="nA"></span></div><div class="facets" id="fA"></div><div id="paneA"></div></div>
+      <div class="zone b" id="zoneB"><div class="zlabel">Б · не делюсь <span id="nB"></span></div><div class="facets" id="fB"></div><div id="paneB"></div></div>
+    </div>
+  </div>
+  <div class="tray">
+    <div class="tray-hint">// тяни треугольник в луч</div>
+    <div class="chips" id="chips"></div>
+  </div>
+  <button class="cta" id="done">разложить спектр →</button>
+</div>
+
+<div class="verdict" id="verdict" hidden>
+  <div class="big" id="vTitle"></div><p id="vText"></p>
+  <button class="cta" onclick="location.reload()">заново</button>
+</div>
+
+<script>
+const NEEDS=["безопасность","близость","свобода","признание","творчество","стабильность","самовыражение","отдых","развитие","любовь","уверенность","новизна","поддержка","смысл","автономия","приватность","забота","игра"];
+const FEEL=["радость","спокойствие","воодушевление","облегчение","гордость","уверенность","нежность","предвкушение","лёгкость","сила","тревога","страх","стыд","вина","обида","одиночество","усталость","сомнение","скука","беспомощность"];
+const VALS=["честность","свобода","семья","смелость","развитие","стабильность","творчество","любовь","признание","вклад в мир","независимость","справедливость"];
+const HEAVY=new Set(["тревога","страх","стыд","вина","обида","одиночество","усталость","сомнение","скука","беспомощность"]);
+const state={A:[],B:[]};let openPane=null;
+
+NEEDS.forEach(n=>{
+  const b=document.createElement("button");b.className="chip";b.textContent=n;b.dataset.v=n;
+  b.addEventListener("pointerdown",startDrag);document.getElementById("chips").appendChild(b);
+});
+
+function glow(){["A","B"].forEach(s=>{
+  document.getElementById("ray"+s).setAttribute("stroke-width",4+state[s].length*1.4);
+  document.getElementById("ray"+s).style.opacity=.5+Math.min(.5,state[s].length*.08);
+  document.getElementById("n"+s).textContent=state[s].length||""})}
+
+function startDrag(e){
+  const src=e.currentTarget;src.setPointerCapture(e.pointerId);
+  const g=src.cloneNode();g.className="chip ghost";g.style.left=e.clientX+"px";g.style.top=e.clientY+"px";
+  document.body.appendChild(g);src.style.opacity=.35;
+  const zA=document.getElementById("zoneA"),zB=document.getElementById("zoneB");
+  const move=ev=>{g.style.left=ev.clientX+"px";g.style.top=ev.clientY+"px";
+    [zA,zB].forEach(z=>{const r=z.getBoundingClientRect();
+      z.classList.toggle("hot",ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})};
+  const up=ev=>{src.removeEventListener("pointermove",move);src.removeEventListener("pointerup",up);
+    [zA,zB].forEach(z=>z.classList.remove("hot"));g.remove();src.style.opacity="";
+    const hit=z=>{const r=z.getBoundingClientRect();return ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom};
+    if(hit(zA))place("A",src);else if(hit(zB))place("B",src)};
+  src.addEventListener("pointermove",move);src.addEventListener("pointerup",up);
+}
+
+function place(side,chip){
+  chip.classList.add("used");
+  const item={need:chip.dataset.v,feelings:[],values:[]};state[side].push(item);
+  const t=document.createElement("button");t.className="facet";t.innerHTML=`<span class="dots"></span>${item.need}`;
+  t.onclick=()=>openLens(side,item,t);
+  document.getElementById("f"+side).appendChild(t);item.el=t;glow();
+}
+
+function openLens(side,item,el){
+  const pane=document.getElementById("pane"+side);
+  if(openPane===item){pane.innerHTML="";openPane=null;return}
+  openPane=item;
+  const mk=(list,arr,tone)=>list.map(w=>`<button class="pill ${tone}${arr.includes(w)?" on":""}" data-k="${tone}" data-v="${w}">${w}</button>`).join("");
+  pane.innerHTML=`<div class="lenspane"><div class="lp-t">▲ ${item.need}</div>
+    <div class="sect">чувствую</div><div class="pills">${mk(FEEL,item.feelings,"x")}</div>
+    <div class="sect">ценность</div><div class="pills">${mk(VALS,item.values,"val")}</div></div>`;
+  pane.querySelectorAll(".pill").forEach(p=>{
+    const w=p.dataset.v;
+    if(p.dataset.k==="x")p.classList.add(HEAVY.has(w)?"unmet":"met"),p.classList.remove("x");
+    p.onclick=()=>{const arr=p.dataset.k==="val"?item.values:item.feelings;
+      const i=arr.indexOf(w);i<0?arr.push(w):arr.splice(i,1);p.classList.toggle("on");
+      el.querySelector(".dots").innerHTML=item.feelings.map(()=>'<i style="background:var(--met)"></i>').join("")+item.values.map(()=>'<i style="background:var(--val)"></i>').join("")}});
+  pane.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+document.getElementById("done").onclick=()=>{
+  const a=state.A.length,b=state.B.length;
+  document.getElementById("vTitle").textContent=a===b?"Спектр симметричен":(a>b?"Луч А ярче":"Луч Б ярче");
+  document.getElementById("vText").textContent=`А: ${a} граней · Б: ${b}. Яркость луча — это сколько потребностей кормит вариант; точки на гранях — чувства и ценности.`;
+  document.getElementById("verdict").hidden=false;
+};
+glow();
+</script>
+</body>
+</html>

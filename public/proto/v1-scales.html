@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Призма · Весы — прототип</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0a14; --card:rgba(255,255,255,.06); --line:rgba(255,255,255,.14);
+  --text:#f4f2ff; --dim:#9d97c2;
+  --A:#7dd6ff; --B:#ffb07d;
+  --met:#5fe3b3; --unmet:#ff8ba7; --val:#c4a5ff;
+  --e-out:cubic-bezier(.16,1,.3,1); --e-spring:cubic-bezier(.34,1.56,.64,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:radial-gradient(120% 90% at 50% 0%,#171430 0%,var(--bg) 60%);color:var(--text);font-family:Onest,system-ui,sans-serif;overflow:hidden}
+.app{max-width:430px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;padding:14px 16px 12px;position:relative}
+header{display:flex;justify-content:space-between;align-items:baseline}
+.logo{font-family:Unbounded;font-size:13px;font-weight:700;letter-spacing:.14em}
+.logo i{font-style:normal;background:linear-gradient(90deg,var(--A),var(--val),var(--B));-webkit-background-clip:text;background-clip:text;color:transparent}
+.step{font-size:12px;color:var(--dim)}
+.dilemma{margin-top:14px;font-family:Unbounded;font-size:21px;font-weight:700;line-height:1.25;overflow:visible;padding-bottom:.18em}
+.dilemma em{font-style:normal;color:var(--dim)}
+
+/* --- сцена с весами --- */
+.scene{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative;margin:8px 0}
+.beamzone{position:relative;height:150px}
+.post{position:absolute;left:50%;bottom:0;width:0;height:0;transform:translateX(-50%);
+  border-left:16px solid transparent;border-right:16px solid transparent;border-bottom:120px solid rgba(255,255,255,.10)}
+.pivot{position:absolute;left:50%;bottom:112px;width:14px;height:14px;border-radius:50%;transform:translateX(-50%);
+  background:var(--text);box-shadow:0 0 18px rgba(255,255,255,.6);z-index:3}
+.beam{position:absolute;left:6%;right:6%;bottom:118px;height:6px;border-radius:3px;
+  background:linear-gradient(90deg,var(--A),rgba(255,255,255,.85),var(--B));
+  transform-origin:50% 50%;transform:rotate(var(--tilt,0deg));
+  transition:transform .7s var(--e-spring);z-index:2}
+.beam::after{content:"";position:absolute;inset:-8px 0;filter:blur(14px);
+  background:linear-gradient(90deg,var(--A),transparent 40%,transparent 60%,var(--B));opacity:.5;z-index:-1}
+.pan{position:absolute;top:132px;width:44%;min-height:120px;border-radius:18px;padding:10px;
+  border:1.5px dashed var(--line);background:rgba(255,255,255,.03);
+  transition:border-color .2s var(--e-out),background .2s var(--e-out),box-shadow .2s var(--e-out)}
+.pan.a{left:2%}.pan.b{right:2%}
+.pan .plabel{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
+.pan.a .plabel{color:var(--A)}.pan.b .plabel{color:var(--B)}
+.pan.hot{border-color:currentColor;background:rgba(255,255,255,.08)}
+.pan.a.hot{color:var(--A);box-shadow:0 0 30px -6px var(--A)}
+.pan.b.hot{color:var(--B);box-shadow:0 0 30px -6px var(--B)}
+.tokens{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tok{clip-path:polygon(50% 0,100% 100%,0 100%);width:58px;height:50px;border:none;cursor:pointer;
+  font:600 8.5px/1.1 Onest;color:#0b0a14;display:flex;align-items:flex-end;justify-content:center;padding:0 6px 9px;
+  animation:drop .5s var(--e-spring);position:relative}
+.pan.a .tok{background:linear-gradient(165deg,#bde9ff,var(--A))}
+.pan.b .tok{background:linear-gradient(165deg,#ffd9b8,var(--B))}
+@keyframes drop{from{transform:translateY(-30px) scale(1.2);opacity:0}}
+.tok .dots{position:absolute;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:2px}
+.tok .dots i{width:5px;height:5px;border-radius:50%}
+
+/* --- лоток треугольников --- */
+.tray{border-top:1px solid var(--line);padding:12px 0 10px}
+.tray-hint{font-size:12px;color:var(--dim);margin-bottom:10px}
+.chips{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 12px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;width:86px;height:76px;border:none;cursor:grab;touch-action:none;
+  clip-path:polygon(50% 4%,97% 93%,3% 93%);
+  background:linear-gradient(160deg,rgba(255,255,255,.34),rgba(255,255,255,.10) 55%,rgba(196,165,255,.22));
+  color:var(--text);font:600 10px/1.15 Onest;display:flex;align-items:flex-end;justify-content:center;padding:0 8px 14px;
+  transition:opacity .15s var(--e-out),transform .15s var(--e-out)}
+.chip.used{opacity:.25;pointer-events:none}
+.ghost{position:fixed;z-index:60;pointer-events:none;transform:translate(-50%,-70%) scale(1.08);
+  filter:drop-shadow(0 10px 24px rgba(157,123,255,.5))}
+
+/* --- линзы --- */
+.lens{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-end;justify-content:center;
+  background:rgba(5,3,12,.55);backdrop-filter:blur(4px);animation:fade .2s var(--e-out)}
+.lens[hidden]{display:none}
+.lens-card{width:100%;max-width:430px;max-height:78dvh;overflow-y:auto;background:#191630;border-radius:22px 22px 0 0;
+  border:1px solid var(--line);border-bottom:none;padding:14px 16px 26px;animation:up .3s var(--e-out)}
+@keyframes fade{from{opacity:0}}
+@keyframes up{from{transform:translateY(40%);opacity:.4}}
+.lens-card h3{font-family:Unbounded;font-size:15px;margin:4px 0 14px}
+.sect{font-size:11px;font-weight:700;letter-spacing:.07em;color:var(--dim);text-transform:uppercase;margin:14px 0 8px}
+.pills{display:flex;flex-wrap:wrap;gap:7px}
+.pill{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;
+  padding:8px 13px;font:500 13px Onest;cursor:pointer;transition:transform .12s var(--e-out),background .12s var(--e-out),border-color .12s var(--e-out)}
+.pill:active{transform:scale(.94)}
+.pill.on.met{background:rgba(95,227,179,.22);border-color:var(--met);color:var(--met)}
+.pill.on.unmet{background:rgba(255,139,167,.2);border-color:var(--unmet);color:var(--unmet)}
+.pill.on.val{background:rgba(196,165,255,.24);border-color:var(--val);color:var(--val)}
+.lens-x{width:100%;margin-top:18px}
+.cta{border:none;border-radius:16px;padding:15px;font:700 15px Onest;cursor:pointer;color:#0b0a14;
+  background:linear-gradient(90deg,var(--A),var(--val),var(--B));transition:transform .12s var(--e-out)}
+.cta:active{transform:scale(.97)}
+.verdict{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;animation:fade .3s var(--e-out)}
+.verdict[hidden]{display:none}
+.verdict .big{font-family:Unbounded;font-size:26px;font-weight:700;text-align:center;overflow:visible;padding-bottom:.18em}
+.verdict p{color:var(--dim);text-align:center;font-size:14px;line-height:1.5}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header><div class="logo">ПРИЗМА<i>◭</i></div><div class="step">прототип «Весы»</div></header>
+  <div class="dilemma">делиться ли <em>своим творчеством</em> публично</div>
+  <div class="scene">
+    <div class="beamzone">
+      <div class="post"></div>
+      <div class="pivot"></div>
+      <div class="beam" id="beam"></div>
+      <div class="pan a" id="panA"><div class="plabel">А · делюсь</div><div class="tokens" id="tokA"></div></div>
+      <div class="pan b" id="panB"><div class="plabel">Б · не делюсь</div><div class="tokens" id="tokB"></div></div>
+    </div>
+  </div>
+  <div class="tray">
+    <div class="tray-hint">Тяни треугольник на чашу — какую потребность накормит вариант</div>
+    <div class="chips" id="chips"></div>
+  </div>
+  <button class="cta" id="done">Взвесить →</button>
+</div>
+
+<div class="lens" id="lens" hidden>
+  <div class="lens-card">
+    <h3 id="lensTitle"></h3>
+    <div class="sect">линза · что чувствую</div>
+    <div class="pills" id="lensFeel"></div>
+    <div class="sect">линза · за какой ценностью стоит</div>
+    <div class="pills" id="lensVal"></div>
+    <button class="cta lens-x" id="lensDone">готово</button>
+  </div>
+</div>
+
+<div class="verdict" id="verdict" hidden>
+  <div class="big" id="vTitle"></div>
+  <p id="vText"></p>
+  <button class="cta" onclick="location.reload()">ещё раз</button>
+</div>
+
+<script>
+const NEEDS=["безопасность","близость","свобода","признание","творчество","стабильность","самовыражение","отдых","развитие","любовь","уверенность","новизна","поддержка","смысл","автономия","приватность","забота","игра"];
+const FEEL=["радость","спокойствие","воодушевление","облегчение","гордость","благодарность","уверенность","нежность","вдохновение","предвкушение","лёгкость","сила","тревога","страх","стыд","вина","обида","одиночество","усталость","сомнение","разочарование","зависть","скука","беспомощность"];
+const VALS=["честность","свобода","семья","смелость","развитие","стабильность","творчество","любовь","признание","вклад в мир","независимость","справедливость"];
+const HEAVY=new Set(["тревога","страх","стыд","вина","обида","одиночество","усталость","сомнение","разочарование","зависть","скука","беспомощность"]);
+const chipsEl=document.getElementById("chips"),beam=document.getElementById("beam");
+const state={A:[],B:[]};
+let cur=null;
+
+NEEDS.forEach(n=>{
+  const b=document.createElement("button");b.className="chip";b.textContent=n;b.dataset.v=n;
+  b.addEventListener("pointerdown",startDrag);chipsEl.appendChild(b);
+});
+
+function tilt(){beam.style.setProperty("--tilt",Math.max(-9,Math.min(9,(state.A.length-state.B.length)*2.2))+"deg")}
+
+function startDrag(e){
+  const src=e.currentTarget;src.setPointerCapture(e.pointerId);
+  const g=src.cloneNode();g.className="chip ghost";g.style.left=e.clientX+"px";g.style.top=e.clientY+"px";
+  document.body.appendChild(g);src.style.opacity=.35;
+  const panA=document.getElementById("panA"),panB=document.getElementById("panB");
+  const move=ev=>{g.style.left=ev.clientX+"px";g.style.top=ev.clientY+"px";
+    [panA,panB].forEach(p=>{const r=p.getBoundingClientRect();
+      p.classList.toggle("hot",ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})};
+  const up=ev=>{src.removeEventListener("pointermove",move);src.removeEventListener("pointerup",up);
+    [panA,panB].forEach(p=>p.classList.remove("hot"));g.remove();src.style.opacity="";
+    const hit=p=>{const r=p.getBoundingClientRect();return ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom};
+    if(hit(panA))place("A",src);else if(hit(panB))place("B",src);};
+  src.addEventListener("pointermove",move);src.addEventListener("pointerup",up);
+}
+
+function place(side,chip){
+  chip.classList.add("used");
+  const item={need:chip.dataset.v,feelings:[],values:[]};state[side].push(item);
+  const t=document.createElement("button");t.className="tok";t.innerHTML=`<span class="dots"></span>${item.need}`;
+  t.onclick=()=>openLens(item,t);
+  document.getElementById("tok"+side).appendChild(t);item.el=t;tilt();
+}
+
+function openLens(item,el){
+  cur={item,el};
+  document.getElementById("lensTitle").textContent="▲ "+item.need;
+  const f=document.getElementById("lensFeel"),v=document.getElementById("lensVal");
+  f.innerHTML=v.innerHTML="";
+  FEEL.forEach(w=>{const p=document.createElement("button");p.className="pill "+(HEAVY.has(w)?"unmet":"met")+(item.feelings.includes(w)?" on":"");
+    p.textContent=w;p.onclick=()=>{tog(item.feelings,w);p.classList.toggle("on")};f.appendChild(p)});
+  VALS.forEach(w=>{const p=document.createElement("button");p.className="pill val"+(item.values.includes(w)?" on":"");
+    p.textContent=w;p.onclick=()=>{tog(item.values,w);p.classList.toggle("on")};v.appendChild(p)});
+  document.getElementById("lens").hidden=false;
+}
+function tog(arr,w){const i=arr.indexOf(w);i<0?arr.push(w):arr.splice(i,1)}
+document.getElementById("lensDone").onclick=()=>{
+  const {item,el}=cur;
+  el.querySelector(".dots").innerHTML=item.feelings.map(()=>'<i style="background:var(--met)"></i>').join("")+item.values.map(()=>'<i style="background:var(--val)"></i>').join("");
+  document.getElementById("lens").hidden=true;cur=null;
+};
+document.getElementById("lens").addEventListener("click",e=>{if(e.target.id==="lens")document.getElementById("lensDone").click()});
+
+document.getElementById("done").onclick=()=>{
+  const a=state.A.length,b=state.B.length;
+  const t=document.getElementById("vTitle"),x=document.getElementById("vText");
+  if(a===b){t.textContent="Весы в равновесии";x.textContent="Оба варианта кормят одинаково — смотри на линзы: какие чувства и ценности перевешивают лично тебя."}
+  else{const w=a>b?"А · делюсь":"Б · не делюсь";t.textContent="Чаша «"+w+"» тяжелее";
+    x.textContent=`Потребностей ${Math.max(a,b)} против ${Math.min(a,b)}. Твоя психика уже проголосовала — осталось признать это.`}
+  document.getElementById("verdict").hidden=false;
+};
+tilt();
+</script>
+</body>
+</html>
