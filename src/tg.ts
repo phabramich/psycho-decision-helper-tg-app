@@ -9,6 +9,7 @@ interface TgWebApp {
   setBackgroundColor?(c: string): void;
   initDataUnsafe?: { user?: { first_name?: string } };
   disableVerticalSwipes?(): void;
+  requestFullscreen?(): void;
   HapticFeedback?: {
     impactOccurred(style: string): void;
     notificationOccurred(type: string): void;
@@ -40,7 +41,8 @@ export function atLeast(v: string): boolean {
 }
 
 // Границы версий Bot API: 6.1 — BackButton/HapticFeedback/header colors, 6.9 — CloudStorage,
-// 7.10 — disableVerticalSwipes (без него вертикальный свайп сворачивает апп поверх драга).
+// 7.10 — disableVerticalSwipes (без него вертикальный свайп сворачивает апп поверх драга),
+// 8.0 — requestFullscreen (апп на весь экран, шапка Telegram прозрачная поверх).
 export const backButton = atLeast("6.1") ? tg?.BackButton : undefined;
 const cloud = atLeast("6.9") ? tg?.CloudStorage : undefined;
 
@@ -59,6 +61,7 @@ export function initTg() {
   }
   try {
     tg.disableVerticalSwipes?.();
+    tg.requestFullscreen?.();
   } catch {
     /* старая версия клиента */
   }

@@ -172,7 +172,7 @@ export function Lenses({
   );
 
   return (
-    <div className="screen" style={{ height: "calc(100dvh - 16px - env(safe-area-inset-bottom))" }}>
+    <div className="screen" style={{ height: "calc(100dvh - 16px - var(--sait) - env(safe-area-inset-bottom))" }}>
       {/* шапка внутри скролла: уезжает вверх, лист остаётся прилипшим */}
       <div className="board" ref={boardRef} onScroll={onScrollBoard}>
         <div className="deck-top">

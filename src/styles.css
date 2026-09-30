@@ -9,6 +9,8 @@
   --unmet: #c2496f;
   --val: #5f4bbf;
   --e-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* фулскрин TG: контент под прозрачной шапкой — инсет сверху из tg-var, фолбэк env() */
+  --sait: var(--tg-content-safe-area-inset-top, env(safe-area-inset-top));
   --e-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   /* карандашная дрожь в обводке и штриховка поверх цвета группы */
   --wob: 255px 15px 225px 15px/15px 225px 15px 255px;
@@ -42,12 +44,12 @@ body::after { /* плёночное зерно */
   content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 100; opacity: .15; mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-#wrap { max-width: 460px; margin: 0 auto; padding: 16px 16px 56px; position: relative; z-index: 1; }
+#wrap { max-width: 460px; margin: 0 auto; padding: calc(16px + var(--sait)) 16px 56px; position: relative; z-index: 1; }
 h1 { font-family: Caveat, cursive; font-size: 62px; font-weight: 700; overflow: visible; padding-bottom: .1em; transform: rotate(-1.5deg); }
 h2 { font-family: Unbounded, sans-serif; font-size: 19px; font-weight: 700; line-height: 1.3; overflow: visible; padding-bottom: .1em; }
 .sub { color: #6b675a; font: 500 17px/1.45 Caveat; }
 .dim { color: var(--dim); font-size: 12px; }
-.screen { display: flex; flex-direction: column; gap: 16px; animation: in .22s var(--e-out); position: relative; min-height: calc(100dvh - 72px - env(safe-area-inset-bottom)); }
+.screen { display: flex; flex-direction: column; gap: 16px; animation: in .22s var(--e-out); position: relative; min-height: calc(100dvh - 72px - var(--sait) - env(safe-area-inset-bottom)); }
 @keyframes in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 
 .back {
