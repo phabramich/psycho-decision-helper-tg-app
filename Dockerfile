@@ -6,7 +6,6 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# раздача статики + авто-HTTPS (Let's Encrypt) под duckdns-домен
-FROM caddy:2-alpine
-COPY Caddyfile /etc/caddy/Caddyfile
-COPY --from=build /app/dist /srv
+# статика; TLS терминирует общий Caddy на хосте
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
