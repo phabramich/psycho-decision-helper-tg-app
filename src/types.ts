@@ -29,4 +29,4 @@ export interface Custom {
   values: string[];
 }
 
-export type Screen = "home" | "setup" | "deck" | "lenses" | "summary" | "view";
+export type Screen = "home" | "setup" | "deck" | "feelings" | "values" | "summary" | "view";

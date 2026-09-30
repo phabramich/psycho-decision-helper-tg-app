@@ -1,47 +1,56 @@
 import { useMemo, useRef, useState } from "react";
-import { CUSTOM_HUE, NEED_GROUPS, needBg } from "./data.ts";
+import { GroupMarks, Minitri, needBg, sq, useZoom, Zoom } from "./components.tsx";
+import { CUSTOM_HUE, NEED_GROUPS, needHue } from "./data.ts";
 import { haptic } from "./tg.ts";
+import { jit, layoutTable, SCALE, type Spot } from "./table.ts";
 import type { Custom, Draft, Pick } from "./types.ts";
 
 type PileId = 0 | 1 | "shared";
-interface Spot {
-  word: string;
-  hue: number;
-  x: number;
-  y: number;
-  r: number;
-}
 interface DragState {
   word: string;
   hue: number;
   x: number;
   y: number;
+  gx: number; // точка захвата внутри пирамидки — клон не телепортируется из-под пальца
+  gy: number;
+  r: number; // наклон от скорости
+  from: PileId | null; // откуда подняли: null = со стола, иначе кучка на листе
 }
 
-const W = 428;
-const hash = (s: string) => {
-  let h = 7;
-  for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 9973;
-  return h;
-};
-const jit = (s: string, k: string, amp: number) => ((hash(s + k) % 1024) / 1024 - 0.5) * 2 * amp;
-const shuffle = <T,>(a: T[]) => {
-  const r = [...a];
-  for (let i = r.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [r[i], r[j]] = [r[j]!, r[i]!];
-  }
-  return r;
-};
-const grad = (h: number) => `linear-gradient(160deg, hsl(${h} 80% 72%), hsl(${h} 68% 58%))`;
-
-function Minitri({ need }: { need: string }) {
+function Pile({
+  picks,
+  pile,
+  dragWord,
+  onDown,
+  onMove,
+  onUp,
+  onCancel,
+}: {
+  picks: Pick[];
+  pile: PileId;
+  dragWord: string | null;
+  onDown: (e: React.PointerEvent<HTMLDivElement>, word: string, pile: PileId) => void;
+  onMove: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onUp: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onCancel: () => void;
+}) {
   return (
-    <div
-      className="minitri"
-      title={need}
-      style={{ background: needBg(need), transform: `rotate(${jit(need, "m", 18)}deg)` }}
-    />
+    <div className="pile">
+      {picks.map((p) => (
+        <div
+          key={p.need}
+          className="pcell"
+          style={{ opacity: dragWord === p.need ? 0.18 : 1 }}
+          onPointerDown={(e) => onDown(e, p.need, pile)}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerCancel={onCancel}
+        >
+          <Minitri need={p.need} />
+          <div className="plabel">{p.need}</div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -50,52 +59,43 @@ export function Deck({
   setDraft,
   custom,
   onDone,
+  onBack,
 }: {
   draft: Draft;
   setDraft: (fn: (d: Draft) => Draft) => void;
   custom: Custom;
   onDone: () => void;
+  onBack: () => void;
 }) {
   const placed = new Set(
     [...draft.options[0].picks, ...draft.options[1].picks, ...draft.shared].map((p) => p.need),
   );
 
-  // Раскладка стола: рыхлые ряды по цветовым группам, позиции стабильны на всю сессию
-  const { spots, tableH } = useMemo(() => {
-    const groups = [
-      ...NEED_GROUPS.map((g) => ({ hue: g.hue, needs: shuffle(g.needs) })),
-      ...(custom.needs.length ? [{ hue: CUSTOM_HUE, needs: shuffle(custom.needs) }] : []),
-    ];
-    const spots: Spot[] = [];
-    let y = 26;
-    for (const g of groups) {
-      const per = 5;
-      const rows = Math.ceil(g.needs.length / per);
-      g.needs.forEach((word, k) => {
-        const row = Math.floor(k / per);
-        const col = k % per;
-        const inRow = Math.min(per, g.needs.length - row * per);
-        const rowW = (inRow - 1) * 78;
-        spots.push({
-          word,
-          hue: g.hue,
-          x: W / 2 - rowW / 2 + col * 78 + jit(word, "x", 10),
-          y: y + row * 82 + jit(word, "y", 8),
-          r: jit(word, "r", 9),
-        });
-      });
-      y += rows * 82 + 30;
-    }
-    return { spots, tableH: y };
-  }, [custom]);
+  // Раскладка стола: рыхлые ряды по цветовым группам, детерминированная — оверлей не поедет
+  const groups = useMemo(
+    () => [
+      ...NEED_GROUPS.map((g) => ({ name: g.name, hue: g.hue, words: g.needs })),
+      ...(custom.needs.length ? [{ name: "свои", hue: CUSTOM_HUE, words: custom.needs }] : []),
+    ],
+    [custom],
+  );
+  const { spots, tableH, blobs } = useMemo(() => layoutTable(groups), [groups]);
+  const zp = useZoom();
 
   const [drag, setDrag] = useState<DragState | null>(null);
   const [gone, setGone] = useState<DragState | null>(null);
   const [hover, setHover] = useState<PileId | null>(null);
+  const [thud, setThud] = useState(false);
   const aRef = useRef<HTMLDivElement>(null);
   const bRef = useRef<HTMLDivElement>(null);
   const cRef = useRef<HTMLDivElement>(null);
-  const hist = useRef<{ word: string; pile: PileId }[]>([]);
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [moreBelow, setMoreBelow] = useState(true);
+
+  const onScrollBoard = () => {
+    const b = boardRef.current;
+    if (b) setMoreBelow(b.scrollHeight - b.scrollTop - b.clientHeight > 40);
+  };
 
   const nA = draft.options[0].picks.length;
   const nB = draft.options[1].picks.length;
@@ -114,7 +114,6 @@ export function Deck({
 
   const commit = (word: string, pile: PileId) => {
     haptic();
-    hist.current.push({ word, pile });
     const pick: Pick = { need: word, feelings: [], values: [] };
     setDraft((d) =>
       pile === 0
@@ -125,32 +124,37 @@ export function Deck({
     );
   };
 
-  const undo = () => {
-    const last = hist.current.pop();
-    if (!last) return;
+  const uncommit = (word: string, pile: PileId) => {
     haptic();
     setDraft((d) => {
-      const arr = last.pile === "shared" ? d.shared : d.options[last.pile].picks;
-      let idx = -1;
-      for (let k = arr.length - 1; k >= 0; k--) {
-        if (arr[k]!.need === last.word) { idx = k; break; }
-      }
-      if (idx < 0) return d;
-      const next = [...arr.slice(0, idx), ...arr.slice(idx + 1)];
-      if (last.pile === 0) return { ...d, options: [{ ...d.options[0], picks: next }, d.options[1]] };
-      if (last.pile === 1) return { ...d, options: [d.options[0], { ...d.options[1], picks: next }] };
-      return { ...d, shared: next };
+      const rm = (a: Pick[]) => a.filter((p) => p.need !== word);
+      return pile === 0
+        ? { ...d, options: [{ ...d.options[0], picks: rm(d.options[0].picks) }, d.options[1]] }
+        : pile === 1
+          ? { ...d, options: [d.options[0], { ...d.options[1], picks: rm(d.options[1].picks) }] }
+          : { ...d, shared: rm(d.shared) };
     });
   };
 
-  const onDown = (e: React.PointerEvent<HTMLDivElement>, s: Spot) => {
+  const grab = (e: React.PointerEvent<HTMLDivElement>, word: string, hue: number, from: PileId | null) => {
     if (drag) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    setDrag({ word: s.word, hue: s.hue, x: e.clientX, y: e.clientY - 60 });
+    haptic();
+    const b = e.currentTarget.getBoundingClientRect();
+    setDrag({
+      word, hue, x: e.clientX, y: e.clientY,
+      gx: e.clientX - (b.left + b.width / 2), gy: e.clientY - (b.top + b.height / 2), r: 0, from,
+    });
+    zp.down(word, needBg(hue), e.clientX, e.clientY, () => { setDrag(null); setHover(null); });
   };
+  const onDown = (e: React.PointerEvent<HTMLDivElement>, s: Spot) => grab(e, s.word, s.hue, null);
+  const onDownPile = (e: React.PointerEvent<HTMLDivElement>, word: string, pile: PileId) =>
+    grab(e, word, needHue(word), pile);
   const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    zp.move(e.clientX, e.clientY);
     if (!drag) return;
-    setDrag({ ...drag, x: e.clientX, y: e.clientY - 60 });
+    const r = Math.max(-12, Math.min(12, (e.clientX - drag.x) * 1.4));
+    setDrag({ ...drag, x: e.clientX, y: e.clientY, r });
     setHover(zoneAt(e.clientX, e.clientY));
   };
   const release = (d: DragState, z: PileId | null) => {
@@ -158,56 +162,59 @@ export function Deck({
     setHover(null);
     setGone(d);
     setTimeout(() => setGone(null), 200);
-    if (z !== null) commit(d.word, z);
+    if (z === null) {
+      if (d.from !== null) uncommit(d.word, d.from); // утащили с листа — вернулась на стол
+    } else if (z !== d.from) {
+      setThud(true);
+      setTimeout(() => setThud(false), 260);
+      if (d.from !== null) uncommit(d.word, d.from);
+      commit(d.word, z);
+    }
   };
   const onUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    zp.end();
     if (drag) release(drag, zoneAt(e.clientX, e.clientY));
   };
   const onCancel = () => {
+    zp.end();
     if (drag) release(drag, null);
   };
 
   return (
-    <div className="screen" style={{ height: "calc(100dvh - 130px)" }}>
-      <div className="dilemma-line">{draft.dilemma}</div>
-      <div className="deck-top">
-        <div className="counts">
-          <span className="cb">←Б {nB}</span>
-          <span className="cs">обоим {draft.shared.length}</span>
-          <span className="ca">А→ {nA}</span>
+    <div className="screen" style={{ height: "calc(100dvh - 16px - env(safe-area-inset-bottom))" }}>
+      {/* шапка внутри скролла: уезжает вверх, лист остаётся прилипшим */}
+      <div className="board" ref={boardRef} onScroll={onScrollBoard}>
+        <div className="deck-top">
+          <button className="back" onClick={onBack} aria-label="Назад">←</button>
+          <div className="dilemma-line" style={sq(draft.dilemma)}>{draft.dilemma}</div>
+          <button className="icon-btn go" style={sq("далее")} onClick={onDone} disabled={!canFinish}>
+            далее →
+          </button>
         </div>
-        <button className="icon-btn" onClick={undo} disabled={!hist.current.length} title="Вернуть карту">
-          ↩
-        </button>
-        <button className="icon-btn" onClick={onDone} disabled={!canFinish}>
-          линзы →
-        </button>
-      </div>
+        <div className="qline">какие потребности накормит каждый вариант?</div>
 
-      <div className="board">
-        <div className="paper">
+        <div className={`paper${thud ? " thud" : ""}`}>
           <div className={`phalf a${hover === 0 ? " hot" : ""}`} ref={aRef}>
             <div className="ptag">А · {draft.options[0].label}</div>
-            <div className="pile">
-              {draft.options[0].picks.map((p) => <Minitri key={p.need} need={p.need} />)}
-            </div>
+            <Pile picks={draft.options[0].picks} pile={0} dragWord={drag?.word ?? null}
+              onDown={onDownPile} onMove={onMove} onUp={onUp} onCancel={onCancel} />
           </div>
           <div className={`fold${hover === "shared" ? " hot" : ""}`} ref={cRef}>
-            <div className="pile">
-              {draft.shared.map((p) => <Minitri key={p.need} need={p.need} />)}
-            </div>
+            <Pile picks={draft.shared} pile="shared" dragWord={drag?.word ?? null}
+              onDown={onDownPile} onMove={onMove} onUp={onUp} onCancel={onCancel} />
           </div>
           <div className={`phalf b${hover === 1 ? " hot" : ""}`} ref={bRef}>
             <div className="ptag">Б · {draft.options[1].label}</div>
-            <div className="pile">
-              {draft.options[1].picks.map((p) => <Minitri key={p.need} need={p.need} />)}
-            </div>
+            <Pile picks={draft.options[1].picks} pile={1} dragWord={drag?.word ?? null}
+              onDown={onDownPile} onMove={onMove} onUp={onUp} onCancel={onCancel} />
           </div>
         </div>
 
-        <div className="thint dim">тащи пирамидку на лист · сгиб посередине = обоим</div>
+        <div className="thint">перетащи пирамидку на лист ↑</div>
 
-        <div className="table" style={{ height: tableH }}>
+        <div className="tscale" style={{ height: tableH * SCALE }}>
+          <div className="table" style={{ height: tableH, transform: `scale(${SCALE})` }}>
+          <GroupMarks blobs={blobs} />
           {spots.filter((s) => !placed.has(s.word)).map((s) => (
             <div
               key={s.word}
@@ -221,7 +228,7 @@ export function Deck({
             >
               <div
                 className="ttri"
-                style={{ background: grad(s.hue), transform: `rotate(${jit(s.word, "t", 16)}deg)` }}
+                style={{ "--h": s.hue, transform: `rotate(${jit(s.word, "t", 16)}deg)` } as React.CSSProperties}
                 onPointerDown={(e) => onDown(e, s)}
                 onPointerMove={onMove}
                 onPointerUp={onUp}
@@ -233,21 +240,31 @@ export function Deck({
           {spots.every((s) => placed.has(s.word)) && (
             <div className="empty">стол пуст — всё разложено</div>
           )}
+          </div>
         </div>
+      </div>
+
+      <div className={`scrolldn${moreBelow ? "" : " off"}`} aria-hidden="true">
+        <svg width="26" height="30" viewBox="0 0 26 30" fill="none">
+          <path d="M13 3c2 8-1 14 .5 21m0 0l-7-6m7 6l7-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </div>
 
       {(drag || gone) && (
         <div
           className={`tclone${gone ? " gone" : ""}`}
           style={{
-            left: (gone ?? drag)!.x,
-            top: (gone ?? drag)!.y,
+            left: (gone ?? drag)!.x - (gone ?? drag)!.gx,
+            top: (gone ?? drag)!.y - (gone ?? drag)!.gy,
+            transform: `translate(-50%, -50%) rotate(${(gone ?? drag)!.r - 4}deg)`,
           }}
         >
-          <div className="ttri" style={{ background: grad((gone ?? drag)!.hue) }} />
+          <div className="ttri" style={{ "--h": (gone ?? drag)!.hue } as React.CSSProperties} />
           <div className="tlabel">{(gone ?? drag)!.word}</div>
         </div>
       )}
+
+      {zp.zoom && <Zoom word={zp.zoom.word} bg={zp.zoom.bg} onClose={zp.close} />}
     </div>
   );
 }

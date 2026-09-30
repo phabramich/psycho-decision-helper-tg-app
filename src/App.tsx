@@ -41,7 +41,11 @@ export default function App() {
     const hasPicks =
       draft.options[0].picks.length + draft.options[1].picks.length + draft.shared.length > 0;
     setScreen((s) =>
-      s === "deck" ? "setup" : s === "lenses" ? "deck" : s === "summary" ? (hasPicks ? "lenses" : "deck") : "home",
+      s === "deck" ? "setup"
+      : s === "feelings" ? "deck"
+      : s === "values" ? "feelings"
+      : s === "summary" ? (hasPicks ? "values" : "deck")
+      : "home",
     );
   }, [draft]);
 
@@ -86,15 +90,9 @@ export default function App() {
 
   if (!loaded) return null;
 
-  const backBtn = screen !== "home" && (
-    <button className="back" onClick={back} aria-label="Назад">
-      ←
-    </button>
-  );
-
+  const fixed = screen === "deck" || screen === "feelings" || screen === "values";
   return (
-    <div id="wrap">
-      {backBtn}
+    <div id="wrap" style={fixed ? { paddingBottom: 0 } : undefined}>
       {screen === "home" && (
         <Home
           sessions={sessions}
@@ -106,26 +104,38 @@ export default function App() {
             setViewId(id);
             setScreen("view");
           }}
+          onDelete={delSession}
         />
       )}
-      {screen === "setup" && <Setup draft={draft} setDraft={setDraft} onNext={() => setScreen("deck")} />}
+      {screen === "setup" && <Setup draft={draft} setDraft={setDraft} onNext={() => setScreen("deck")} onBack={back} />}
       {screen === "deck" && (
-        <Deck draft={draft} setDraft={setDraft} custom={custom} onDone={() => setScreen("lenses")} />
+        <Deck draft={draft} setDraft={setDraft} custom={custom} onDone={() => setScreen("feelings")} onBack={back} />
       )}
-      {screen === "lenses" && (
+      {screen === "feelings" && (
         <Lenses
           draft={draft}
           setDraft={setDraft}
           custom={custom}
-          addCustom={addCustom}
-          onDone={() => setScreen("summary")}
+          phase="feelings"
+          onDone={() => setScreen("values")}
+          onBack={back}
         />
       )}
-      {screen === "summary" && <Summary draft={draft} setDraft={setDraft} custom={custom} addCustom={addCustom} onSave={saveDraft} />}
+      {screen === "values" && (
+        <Lenses
+          draft={draft}
+          setDraft={setDraft}
+          custom={custom}
+          phase="values"
+          onDone={() => setScreen("summary")}
+          onBack={back}
+        />
+      )}
+      {screen === "summary" && <Summary draft={draft} setDraft={setDraft} custom={custom} addCustom={addCustom} onSave={saveDraft} onBack={back} />}
       {screen === "view" &&
         (() => {
           const s = sessions.find((x) => x.id === viewId);
-          return s ? <SessionView s={s} onDelete={() => delSession(s.id)} /> : null;
+          return s ? <SessionView s={s} onDelete={() => delSession(s.id)} onBack={back} /> : null;
         })()}
     </div>
   );

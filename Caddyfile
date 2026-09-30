@@ -1,0 +1,5 @@
+prisma-game.duckdns.org {
+	root * /srv
+	encode gzip
+	file_server
+}

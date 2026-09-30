@@ -1,30 +1,22 @@
 import { useState } from "react";
 import { FEELINGS_UNMET } from "./data.ts";
-import { tg, haptic } from "./tg.ts";
+import { haptic } from "./tg.ts";
+import { sq } from "./components.tsx";
 import type { Custom, Draft, Pick, Session } from "./types.ts";
 import { LensSheet } from "./LensSheet.tsx";
 
 const fmtDate = (ts: number) => new Date(ts).toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
 
-export function Home({ sessions, onNew, onOpen }: { sessions: Session[]; onNew: () => void; onOpen: (id: string) => void }) {
-  const name = tg?.initDataUnsafe?.user?.first_name;
+export function Home({ sessions, onNew, onOpen, onDelete }: { sessions: Session[]; onNew: () => void; onOpen: (id: string) => void; onDelete: (id: string) => void }) {
   return (
     <div className="screen">
       <div className="hero">
         <div className="prism">◭</div>
-        <h1>ПРИЗМА</h1>
-        <p className="sub">
-          {name ? `${name}, р` : "Р"}азложи свой выбор колодой: смахивай потребности в сторону варианта,
-          который их накормит. Мимо — тоже ход.
-        </p>
+        <h1>Призма</h1>
       </div>
-      <button className="btn" onClick={onNew}>
-        Новый расклад →
-      </button>
       <div className="hist">
-        {sessions.length === 0 && <div className="empty">Пока пусто. Первый расклад появится здесь.</div>}
         {[...sessions].sort((a, b) => b.ts - a.ts).map((s) => (
-          <button key={s.id} className="hcard" onClick={() => onOpen(s.id)}>
+          <div key={s.id} className="hcard" onClick={() => onOpen(s.id)}>
             <div className="d">
               {fmtDate(s.ts)}
               {s.leaning !== null ? ` → ${s.options[s.leaning]!.label}` : ""}
@@ -34,14 +26,30 @@ export function Home({ sessions, onNew, onOpen }: { sessions: Session[]; onNew: 
               {s.options[0]!.label}: {s.options[0]!.picks.length} ▲ · {s.options[1]!.label}: {s.options[1]!.picks.length} ▲
               {s.shared?.length ? ` · обоим ${s.shared.length}` : ""}
             </div>
-          </button>
+            <button
+              className="hdel"
+              aria-label="Удалить"
+              onClick={(e) => {
+                e.stopPropagation();
+                haptic();
+                onDelete(s.id);
+              }}
+            >
+              ✕
+            </button>
+          </div>
         ))}
+      </div>
+      <div className="bar">
+        <button className="btn" style={sq(sessions.length ? "новая дилемма" : "начать")} onClick={onNew}>
+          {sessions.length ? "новая дилемма" : "начать"}
+        </button>
       </div>
     </div>
   );
 }
 
-export function Setup({ draft, setDraft, onNext }: { draft: Draft; setDraft: (d: Draft) => void; onNext: () => void }) {
+export function Setup({ draft, setDraft, onNext, onBack }: { draft: Draft; setDraft: (d: Draft) => void; onNext: () => void; onBack: () => void }) {
   const [d, setD] = useState(draft);
   const ok = d.dilemma.trim().length > 0;
   const commit = () => {
@@ -57,24 +65,25 @@ export function Setup({ draft, setDraft, onNext }: { draft: Draft; setDraft: (d:
   };
   return (
     <div className="screen">
-      <h2>Что за выбор?</h2>
+      <button className="back" onClick={onBack} aria-label="Назад">←</button>
+      <h2>Из чего выбираешь?</h2>
       <p className="sub">Одна фраза: «делиться ли творчеством», «менять ли работу», «начать ли разговор».</p>
-      <textarea rows={3} placeholder="Мой выбор: …" value={d.dilemma} onChange={(e) => setD({ ...d, dilemma: e.target.value })} autoFocus />
+      <textarea rows={3} placeholder="Моя дилемма: …" value={d.dilemma} onChange={(e) => setD({ ...d, dilemma: e.target.value })} autoFocus />
       <div>
-        <label className="fld">Вариант А — если сделаю (свайп вправо)</label>
+        <label className="fld">Вариант А · слева на листе</label>
         <div className="optname">
           <span className="badge a">А</span>
           <input type="text" value={d.options[0].label} placeholder="делаю" onChange={(e) => setD({ ...d, options: [{ ...d.options[0], label: e.target.value }, d.options[1]] })} />
         </div>
-        <label className="fld">Вариант Б — если не сделаю (свайп влево)</label>
+        <label className="fld">Вариант Б · справа на листе</label>
         <div className="optname">
           <span className="badge b">Б</span>
           <input type="text" value={d.options[1].label} placeholder="не делаю" onChange={(e) => setD({ ...d, options: [d.options[0], { ...d.options[1], label: e.target.value }] })} />
         </div>
       </div>
       <div className="bar">
-        <button className="btn" disabled={!ok} onClick={commit}>
-          Раздать колоду →
+        <button className="btn" style={sq("далее")} disabled={!ok} onClick={commit}>
+          далее →
         </button>
       </div>
     </div>
@@ -113,12 +122,14 @@ export function Summary({
   custom,
   addCustom,
   onSave,
+  onBack,
 }: {
   draft: Draft;
   setDraft: (fn: (d: Draft) => Draft) => void;
   custom: Custom;
   addCustom: (kind: keyof Custom, word: string) => string;
   onSave: () => void;
+  onBack: () => void;
 }) {
   const [editing, setEditing] = useState<{ pile: 0 | 1 | "shared"; need: string } | null>(null);
 
@@ -154,18 +165,21 @@ export function Summary({
   };
 
   const p = findPick();
+  const hasPicks = draft.options[0].picks.length + draft.options[1].picks.length + draft.shared.length > 0;
   return (
     <div className="screen">
+      <button className="back" onClick={onBack} aria-label="Назад">←</button>
       <h2>{draft.dilemma}</h2>
       <OptCard title={`А · ${draft.options[0].label}`} cls="oa" picks={draft.options[0].picks} onPick={(pk) => setEditing({ pile: 0, need: pk.need })} />
       <OptCard title={`Б · ${draft.options[1].label}`} cls="ob" picks={draft.options[1].picks} onPick={(pk) => setEditing({ pile: 1, need: pk.need })} />
       {draft.shared.length > 0 && (
-        <OptCard title="Обоим подходит — не решающий фактор" cls="os" picks={draft.shared} onPick={(pk) => setEditing({ pile: "shared", need: pk.need })} />
+        <OptCard title="Подходит обоим" cls="os" picks={draft.shared} onPick={(pk) => setEditing({ pile: "shared", need: pk.need })} />
       )}
-      {draft.skipped.length > 0 && <p className="dim">мимо пролетело: {draft.skipped.length} карт</p>}
+      {hasPicks && <p className="dim">нажми на потребность — поправить чувства и ценности</p>}
+      {draft.skipped.length > 0 && <p className="dim">отложено: {draft.skipped.length}</p>}
 
       <div>
-        <div className="sect">К чему склоняешься?</div>
+        <div className="sect">Куда тянет?</div>
         <div className="lean">
           {draft.options.map((o, i) => (
             <button key={i} className={`pill${draft.leaning === i ? " sel" : ""}`} onClick={() => { haptic(); setDraft((d) => ({ ...d, leaning: i as 0 | 1 })); }}>
@@ -179,13 +193,13 @@ export function Summary({
       </div>
       <textarea
         rows={3}
-        placeholder="Что я понял(а), разложив этот выбор…"
+        placeholder="Что стало понятно…"
         value={draft.note}
         onChange={(e) => setDraft((d) => ({ ...d, note: e.target.value }))}
       />
       <div className="bar">
-        <button className="btn" onClick={onSave}>
-          Сохранить расклад
+        <button className="btn" style={sq("сохранить")} onClick={onSave}>
+          Сохранить
         </button>
       </div>
 
@@ -196,16 +210,17 @@ export function Summary({
   );
 }
 
-export function SessionView({ s, onDelete }: { s: Session; onDelete: () => void }) {
+export function SessionView({ s, onDelete, onBack }: { s: Session; onDelete: () => void; onBack: () => void }) {
   return (
     <div className="screen">
+      <button className="back" onClick={onBack} aria-label="Назад">←</button>
       <p className="sub">{fmtDate(s.ts)}</p>
       <h2>{s.dilemma}</h2>
       <OptCard title={`А · ${s.options[0]!.label}`} cls="oa" picks={s.options[0]!.picks} />
       <OptCard title={`Б · ${s.options[1]!.label}`} cls="ob" picks={s.options[1]!.picks} />
-      {!!s.shared?.length && <OptCard title="Обоим подходит" cls="os" picks={s.shared} />}
-      {!!s.skipped?.length && <p className="dim">мимо пролетело: {s.skipped.length} карт</p>}
-      {s.leaning !== null && s.leaning !== undefined && <p className="sub">Склонение: {s.options[s.leaning]!.label}</p>}
+      {!!s.shared?.length && <OptCard title="Подходит обоим" cls="os" picks={s.shared} />}
+      {!!s.skipped?.length && <p className="dim">отложено: {s.skipped.length}</p>}
+      {s.leaning !== null && s.leaning !== undefined && <p className="sub">Итог: {s.options[s.leaning]!.label}</p>}
       {s.note && (
         <div className="optcard">
           <div className="t">{s.note}</div>

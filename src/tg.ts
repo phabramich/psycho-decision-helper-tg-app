@@ -8,6 +8,7 @@ interface TgWebApp {
   setHeaderColor?(c: string): void;
   setBackgroundColor?(c: string): void;
   initDataUnsafe?: { user?: { first_name?: string } };
+  disableVerticalSwipes?(): void;
   HapticFeedback?: {
     impactOccurred(style: string): void;
     notificationOccurred(type: string): void;
@@ -38,7 +39,8 @@ export function atLeast(v: string): boolean {
   return true;
 }
 
-// Границы версий Bot API: 6.1 — BackButton/HapticFeedback/header colors, 6.9 — CloudStorage.
+// Границы версий Bot API: 6.1 — BackButton/HapticFeedback/header colors, 6.9 — CloudStorage,
+// 7.10 — disableVerticalSwipes (без него вертикальный свайп сворачивает апп поверх драга).
 export const backButton = atLeast("6.1") ? tg?.BackButton : undefined;
 const cloud = atLeast("6.9") ? tg?.CloudStorage : undefined;
 
@@ -54,6 +56,11 @@ export function initTg() {
     } catch {
       /* старая версия клиента */
     }
+  }
+  try {
+    tg.disableVerticalSwipes?.();
+  } catch {
+    /* старая версия клиента */
   }
 }
 

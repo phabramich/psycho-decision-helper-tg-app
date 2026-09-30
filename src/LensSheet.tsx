@@ -42,7 +42,7 @@ export function LensSheet({
         autoFocus
       />
 
-      <div className="sect">линза · что чувствую</div>
+      <div className="sect">что чувствую</div>
       <div className="pills">
         {met.map((w) => (
           <Pill key={w} label={w} tone="met" sel={pick.feelings.includes(w)} onClick={() => onToggle("feelings", w)} />
@@ -57,7 +57,7 @@ export function LensSheet({
         )}
       </div>
 
-      <div className="sect">линза · за какой ценностью стоит</div>
+      <div className="sect">за какой ценностью стоит</div>
       <div className="pills">
         {vals.map((w) => (
           <Pill key={w} label={w} tone="val" sel={pick.values.includes(w)} onClick={() => onToggle("values", w)} />
@@ -69,7 +69,7 @@ export function LensSheet({
 
       {onRemove && (
         <button className="btn danger" style={{ width: "100%", marginTop: 18 }} onClick={onRemove}>
-          убрать карту
+          убрать со стола
         </button>
       )}
     </Sheet>

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Призма — вайб LiS, 3 варианта</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=JetBrains+Mono:wght@500;700&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #171310; color: #f4ead8; font-family: "JetBrains Mono", monospace; }
+.grain {
+  position: fixed; inset: 0; pointer-events: none; z-index: 90; opacity: .35; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.v { min-height: 100dvh; position: relative; padding: 46px 14px 60px; overflow: hidden; }
+.vtag {
+  position: absolute; top: 10px; left: 12px; z-index: 20;
+  font: 700 11px "JetBrains Mono"; letter-spacing: .08em; text-transform: uppercase;
+  padding: 5px 10px; border-radius: 8px; background: #171310; color: #f4ead8; opacity: .85;
+}
+/* общий мок-контент: лист + стол */
+.mock { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.tri { width: 54px; height: 47px; }
+.lb { font-size: 10px; text-align: center; line-height: 1.15; }
+.cell { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 92px; }
+.mini { width: 26px; height: 23px; flex: none; margin: 0 -6px -4px 0; }
+
+/* ================= А · СКЕТЧБУК ================= */
+.va { background: #ece1c8; color: #2e2618; }
+.va::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 30%, transparent 55%, rgba(120,85,40,.28));
+}
+.va .mock { position: relative; }
+.va .dil {
+  font: 700 22px Caveat; transform: rotate(-1.2deg);
+  background: #fffdf4; padding: 10px 14px; position: relative;
+  box-shadow: 2px 3px 8px rgba(60,40,15,.25);
+}
+.va .dil::before, .va .dil::after {
+  content: ""; position: absolute; width: 70px; height: 20px; top: -9px;
+  background: repeating-linear-gradient(45deg, rgba(255,190,110,.55) 0 4px, rgba(255,170,90,.45) 4px 8px);
+  clip-path: polygon(3% 15%, 97% 5%, 100% 85%, 0 95%);
+}
+.va .dil::before { left: -16px; transform: rotate(-8deg); }
+.va .dil::after { right: -16px; transform: rotate(7deg); }
+.va .sheet {
+  display: flex; background: #fffdf4; position: relative; min-height: 118px;
+  border: 2px solid #2e2618;
+  border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+  box-shadow: 3px 4px 0 rgba(46,38,24,.2);
+  transform: rotate(.4deg);
+}
+.va .half { flex: 1; padding: 8px 10px; }
+.va .half + .half { border-left: none; }
+.va .pt { font: 700 17px Caveat; }
+.va .ha .pt { color: #6a4fd0; } .va .hb .pt { color: #d05a35; }
+.va .fold { flex: none; width: 34px; background:
+  repeating-linear-gradient(0deg, transparent 0 7px, rgba(46,38,24,.35) 7px 8px) center/2px 100% no-repeat; }
+.va .pilez { display: flex; flex-wrap: wrap; }
+.va .tri { clip-path: polygon(50% 5%, 96% 92%, 4% 93%); }
+.va .mini { clip-path: polygon(50% 5%, 96% 92%, 4% 93%); }
+.va .lb { font-family: Caveat; font-size: 14px; font-weight: 700; color: #2e2618; }
+.va .grp { display: flex; flex-wrap: wrap; gap: 6px 2px; justify-content: center; }
+.va .cell:nth-child(3n) { transform: rotate(-3deg); }
+.va .cell:nth-child(3n+1) { transform: rotate(2.5deg); }
+.va .hint { font: 500 16px Caveat; text-align: center; color: #6b5c3f; transform: rotate(-1deg); }
+.va .counts { display: flex; justify-content: space-between; font: 700 12px "JetBrains Mono"; }
+.va .counts .ca { color: #6a4fd0; } .va .counts .cb { color: #d05a35; } .va .counts .cs { color: #8a7a55; }
+.va .doodle { position: absolute; right: 6px; top: 64px; width: 90px; opacity: .6; transform: rotate(8deg); }
+
+/* ================= Б · ПЛЁНКА ================= */
+.vb { background: #171310; color: #efe3cb; }
+.vb::before {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 88% -8%, rgba(255,150,60,.42), transparent 52%),
+    radial-gradient(ellipse at -12% 108%, rgba(46,93,99,.5), transparent 55%),
+    radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(0,0,0,.55));
+}
+.vb .mock { position: relative; }
+.vb .dil {
+  font: 700 11px "JetBrains Mono"; letter-spacing: .12em; text-transform: uppercase;
+  color: #efe3cb; opacity: .8; border-left: 3px solid rgba(255,170,90,.6); padding-left: 10px;
+}
+.vb .counts { display: flex; justify-content: space-between; font: 700 11px "JetBrains Mono"; letter-spacing: .1em; }
+.vb .counts .ca { color: #b39aff; } .vb .counts .cb { color: #ff9a75; } .vb .counts .cs { color: #8d8570; }
+.vb .sheet {
+  display: flex; min-height: 118px; transform: rotate(-.8deg);
+  background: #f6efdd; color: #241c12; padding: 10px 10px 26px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.55), 0 2px 0 rgba(255,255,255,.15) inset;
+  border-radius: 3px; position: relative;
+}
+.vb .sheet::after { /* подпись на поляроиде */
+  content: "расклад · плёнка 400"; position: absolute; bottom: 5px; left: 0; right: 0;
+  font: 500 15px Caveat; text-align: center; color: #5c5140;
+}
+.vb .half { flex: 1; padding: 4px 6px; background: rgba(20,16,10,.06); }
+.vb .ha { margin-right: 6px; } .vb .hb { margin-left: 6px; }
+.vb .pt { font: 700 10px "JetBrains Mono"; letter-spacing: .1em; text-transform: uppercase; }
+.vb .ha .pt { color: #6a4fd0; } .vb .hb .pt { color: #d05a35; }
+.vb .fold { flex: none; width: 16px; position: relative; }
+.vb .fold::before { content: ""; position: absolute; inset: 0 6px; background: rgba(20,16,10,.15); }
+.vb .pilez { display: flex; flex-wrap: wrap; margin-top: 6px; }
+.vb .mini { clip-path: polygon(50% 5%, 96% 92%, 4% 93%); }
+.vb .hint { font: 500 11px "JetBrains Mono"; text-align: center; letter-spacing: .08em; color: #8d8570; }
+.vb .strip {
+  background: #221c17; border-radius: 10px; padding: 20px 10px; position: relative;
+}
+.vb .strip::before, .vb .strip::after {
+  content: ""; position: absolute; left: 6px; right: 6px; height: 10px;
+  background-image: radial-gradient(circle, #efe3cb 2.2px, transparent 2.8px);
+  background-size: 20px 10px; background-position: center;
+}
+.vb .strip::before { top: 5px; } .vb .strip::after { bottom: 5px; }
+.vb .grp { display: flex; flex-wrap: wrap; gap: 8px 2px; justify-content: center; }
+.vb .cell { gap: 4px; }
+.vb .cell:nth-child(odd) { transform: rotate(-2deg); }
+.vb .cell:nth-child(3n) { transform: rotate(2.8deg); }
+.vb .tri { background: #f6efdd; clip-path: none; width: 58px; height: 52px; padding: 4px; border-radius: 2px; box-shadow: 0 3px 8px rgba(0,0,0,.5); }
+.vb .tri i { display: block; width: 100%; height: 100%; clip-path: polygon(50% 5%, 96% 92%, 4% 93%); }
+.vb .lb { font: 500 13px Caveat; color: #d8cbb0; }
+
+/* ================= В · КАРАНДАШ ================= */
+.vc { background: #f4f0e6; color: #3a3428; }
+.vc::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(90,120,160,.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90,120,160,.12) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+.vc .mock { position: relative; }
+.vc .dil {
+  font: 700 24px Caveat; transform: rotate(-.8deg); padding: 2px 8px;
+  border-bottom: 2px solid rgba(58,52,40,.7); display: inline-block;
+}
+.vc .counts { display: flex; justify-content: space-between; font: 500 15px Caveat; color: #6b6455; }
+.vc .counts .ca { color: #4a3f8f; } .vc .counts .cb { color: #a04a28; } .vc .counts .cs { color: #6b6455; }
+.vc .sheet {
+  display: flex; min-height: 118px; background: #fbf8ef; position: relative;
+  border: 2px solid rgba(58,52,40,.85);
+  border-radius: 240px 12px 230px 12px/12px 230px 12px 240px;
+  transform: rotate(.3deg); margin-left: 14px;
+}
+.vc .sheet::before { /* вторая карандашная обводка */
+  content: ""; position: absolute; inset: -3px; pointer-events: none;
+  border: 1.5px solid rgba(58,52,40,.4); border-radius: inherit; transform: rotate(-.5deg);
+}
+.vc .sheet::after { /* поля тетради */
+  content: ""; position: absolute; top: 0; bottom: 0; left: -14px; width: 14px;
+  border-right: 2px solid rgba(190,80,70,.5); background: #fbf8ef;
+}
+.vc .half { flex: 1; padding: 8px 10px; }
+.vc .pt { font: 700 18px Caveat; }
+.vc .ha .pt { color: #4a3f8f; } .vc .hb .pt { color: #a04a28; }
+.vc .fold { flex: none; width: 30px; position: relative; }
+.vc .fold::before { content: ""; position: absolute; inset: 4px 13px; background:
+  repeating-linear-gradient(0deg, transparent 0 6px, rgba(58,52,40,.5) 6px 7px); }
+.vc .pilez { display: flex; flex-wrap: wrap; margin-top: 4px; }
+.vc .mini, .vc .tri { clip-path: polygon(50% 5%, 96% 92%, 4% 93%); }
+.vc .grp { display: flex; flex-wrap: wrap; gap: 7px 2px; justify-content: center; }
+.vc .cell:nth-child(3n+2) { transform: rotate(-2.4deg); }
+.vc .cell:nth-child(4n) { transform: rotate(3deg); }
+.vc .lb { font: 500 14px Caveat; color: #4a4438; }
+.vc .hint { font: 500 16px Caveat; text-align: center; color: #6b6455; }
+.vc .circ { /* обведённая подпись группы */
+  font: 700 15px Caveat; color: #6b6455; text-align: center; margin-bottom: -2px;
+}
+.vc .circ span { border: 1.5px solid rgba(58,52,40,.5); border-radius: 50%; padding: 1px 10px; transform: rotate(-2deg); display: inline-block; }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<!-- ============ А · СКЕТЧБУК / ДНЕВНИК ============ -->
+<section class="v va">
+  <div class="vtag">а · скетчбук</div>
+  <div class="mock">
+    <div class="counts"><span class="cb">←Б 2</span><span class="cs">обоим 1</span><span class="ca">А→ 3</span></div>
+    <div class="dil">уехать ли в другой город?</div>
+    <svg class="doodle" viewBox="0 0 90 60" fill="none" stroke="#6b5c3f" stroke-width="2" stroke-linecap="round">
+      <path d="M8 50 Q 30 10, 70 18" /><path d="M62 10 L 72 18 L 60 24" />
+      <path d="M14 8 l5 5 M19 8 l-5 5" /><circle cx="80" cy="44" r="5"/>
+    </svg>
+    <div class="sheet">
+      <div class="half ha"><div class="pt">А · уезжаю</div><div class="pilez" id="pa"></div></div>
+      <div class="fold"></div>
+      <div class="half hb"><div class="pt">Б · остаюсь</div><div class="pilez" id="pb"></div></div>
+    </div>
+    <div class="hint">перетащи пирамидку на лист ↓</div>
+    <div class="grp" id="ta"></div>
+  </div>
+</section>
+
+<!-- ============ Б · ПЛЁНКА / ТЁМНАЯ КОМНАТА ============ -->
+<section class="v vb">
+  <div class="vtag">б · плёнка</div>
+  <div class="mock">
+    <div class="counts"><span class="cb">←Б 2</span><span class="cs">обоим 1</span><span class="ca">А→ 3</span></div>
+    <div class="dil">уехать ли в другой город?</div>
+    <div class="sheet">
+      <div class="half ha"><div class="pt">А · уезжаю</div><div class="pilez" id="pc"></div></div>
+      <div class="fold"></div>
+      <div class="half hb"><div class="pt">Б · остаюсь</div><div class="pilez" id="pd"></div></div>
+    </div>
+    <div class="hint">пирамидки на проявленный лист · сгиб = обоим</div>
+    <div class="strip"><div class="grp" id="tb"></div></div>
+  </div>
+</section>
+
+<!-- ============ В · КАРАНДАШНЫЙ СКЕТЧ ============ -->
+<section class="v vc">
+  <div class="vtag">в · карандаш</div>
+  <div class="mock">
+    <div class="counts"><span class="cb">←Б 2</span><span class="cs">обоим 1</span><span class="ca">А→ 3</span></div>
+    <div class="dil">уехать ли в другой город?</div>
+    <div class="sheet">
+      <div class="half ha"><div class="pt">А · уезжаю</div><div class="pilez" id="pe"></div></div>
+      <div class="fold"></div>
+      <div class="half hb"><div class="pt">Б · остаюсь</div><div class="pilez" id="pf"></div></div>
+    </div>
+    <div class="hint">перетащи пирамидку на лист ↓</div>
+    <div class="circ"><span>связь</span></div>
+    <div class="grp" id="tc"></div>
+  </div>
+</section>
+
+<script>
+// палитра групп ННО как в data.ts
+const G = { sv: 335, tel: 150, igr: 25, pok: 215, avt: 270, smy: 55 };
+const grad = (h, l1 = 78, l2 = 60) => `linear-gradient(160deg, hsl(${h} 72% ${l1}%), hsl(${h} 60% ${l2}%))`;
+const hatch = `repeating-linear-gradient(-55deg, transparent 0 3px, rgba(43,36,24,.14) 3px 4px)`;
+const items = [
+  ["близость", G.sv], ["любовь", G.sv], ["тепло", G.sv], ["доверие", G.sv],
+  ["безопасность", G.pok], ["уют", G.pok], ["порядок", G.pok], ["покой", G.pok],
+  ["азарт", G.igr], ["юмор", G.igr], ["радость", G.igr],
+  ["отдых", G.tel], ["сон", G.tel],
+  ["свобода", G.avt], ["выбор", G.avt],
+  ["развитие", G.smy], ["творчество", G.smy], ["смысл", G.smy],
+];
+const pile = { pa: [335, 335, 55], pb: [215, 25], pc: [335, 335, 55], pd: [215, 25], pe: [335, 335, 55], pf: [215, 25] };
+for (const [id, hues] of Object.entries(pile)) {
+  document.getElementById(id).innerHTML = hues
+    .map((h, i) => `<div class="mini" style="background:${grad(h)};transform:rotate(${(i % 2 ? -1 : 1) * (8 + i * 3)}deg)"></div>`)
+    .join("");
+}
+const jit = (s, k) => { let h = 7; for (const c of s + k) h = (h * 31 + c.charCodeAt(0)) % 997; return h / 997 - .5; };
+for (const [id, mode] of [["ta", "a"], ["tb", "b"], ["tc", "c"]]) {
+  document.getElementById(id).innerHTML = items.map(([w, h]) => {
+    const r = (jit(w, "r") * 24).toFixed(1);
+    if (mode === "b") return `<div class="cell"><div class="tri"><i style="background:${grad(h)}"></i></div><div class="lb">${w}</div></div>`;
+    if (mode === "c") return `<div class="cell"><div class="tri" style="background:${hatch}, ${grad(h, 84, 74)};transform:rotate(${r}deg)"></div><div class="lb">${w}</div></div>`;
+    return `<div class="cell"><div class="tri" style="background:${hatch}, ${grad(h, 80, 66)};transform:rotate(${r}deg)"></div><div class="lb">${w}</div></div>`;
+  }).join("");
+}
+</script>
+</body>
+</html>
