@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="640" height="360" viewBox="0 0 640 360">
+<defs>
+  <linearGradient id="g25" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="hsl(25,70%,80%)"/><stop offset="1" stop-color="hsl(25,55%,68%)"/></linearGradient>
+  <linearGradient id="g150" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="hsl(150,70%,80%)"/><stop offset="1" stop-color="hsl(150,55%,68%)"/></linearGradient>
+  <linearGradient id="g215" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="hsl(215,70%,80%)"/><stop offset="1" stop-color="hsl(215,55%,68%)"/></linearGradient>
+  <linearGradient id="g270" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="hsl(270,70%,80%)"/><stop offset="1" stop-color="hsl(270,55%,68%)"/></linearGradient>
+  <linearGradient id="g335" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="hsl(335,70%,80%)"/><stop offset="1" stop-color="hsl(335,55%,68%)"/></linearGradient>
+  <pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-55)"><line x1="3.5" y1="0" x2="3.5" y2="4" stroke="rgba(58,52,40,.14)" stroke-width="1"/></pattern>
+  <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="1.1" cy="1.1" r="1.1" fill="rgba(118,132,162,.42)"/></pattern>
+  <filter id="halo" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.4"/></filter>
+  <path id="tri" d="M.458.12Q.5.04.542.12L.928.85Q.97.93.88.93L.12.93Q.03.93.072.85Z" vector-effect="non-scaling-stroke"/>
+</defs>
+<rect width="640" height="360" fill="#f7f3ea"/>
+<rect width="640" height="360" fill="url(#dots)" opacity=".55"/>
+
+<!-- лист под наклоном, как .paper -->
+<g transform="rotate(-1.8 320 30)">
+  <rect x="-40" y="-70" width="720" height="150" rx="18" fill="#fcfcfa" stroke="#3a3428" stroke-width="3"/>
+  <rect x="-36" y="-66" width="712" height="142" rx="15" fill="none" stroke="rgba(58,52,40,.3)" stroke-width="1.5"/>
+  <!-- две уже разложенные на листе -->
+  <g transform="translate(168 30) rotate(-6) scale(58 50) translate(-.5 -.485)">
+    <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(335,55%,60%)" stroke-width="7" filter="url(#halo)" opacity=".85"/>
+    <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(335,48%,40%)" stroke-width="2.4" opacity=".9"/>
+    <use xlink:href="#tri" href="#tri" fill="url(#g335)"/>
+    <use xlink:href="#tri" href="#tri" fill="url(#hatch)"/>
+  </g>
+  <g transform="translate(235 42) rotate(8) scale(54 46) translate(-.5 -.485)">
+    <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(150,55%,60%)" stroke-width="7" filter="url(#halo)" opacity=".85"/>
+    <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(150,48%,40%)" stroke-width="2.4" opacity=".9"/>
+    <use xlink:href="#tri" href="#tri" fill="url(#g150)"/>
+    <use xlink:href="#tri" href="#tri" fill="url(#hatch)"/>
+  </g>
+</g>
+
+<!-- карандашная обводка-овал вокруг левой кучки -->
+<ellipse cx="255" cy="205" rx="195" ry="112" transform="rotate(-4 255 205)" fill="none" stroke="hsl(270,42%,52%)" stroke-opacity=".55" stroke-width="1.6"/>
+<ellipse cx="257" cy="203" rx="200" ry="118" transform="rotate(-2 255 205)" fill="none" stroke="hsl(270,42%,52%)" stroke-opacity=".28" stroke-width="1.2"/>
+
+<!-- свобода · автономия -->
+<g transform="translate(255 200) rotate(-7)"><g transform="scale(150 130) translate(-.5 -.485)">
+  <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(270,55%,60%)" stroke-width="7" filter="url(#halo)" opacity=".85"/>
+  <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(270,48%,40%)" stroke-width="2.4" opacity=".9"/>
+  <use xlink:href="#tri" href="#tri" fill="url(#g270)"/>
+  <use xlink:href="#tri" href="#tri" fill="url(#hatch)"/>
+</g>
+<text y="86" text-anchor="middle" font-family="Caveat,'Snell Roundhand','Apple Chancery',cursive" font-size="30" fill="#3a3428" transform="rotate(3)">свобода</text>
+</g>
+
+<!-- близость · связь -->
+<g transform="translate(455 145) rotate(9)"><g transform="scale(118 102) translate(-.5 -.485)">
+  <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(335,55%,60%)" stroke-width="7" filter="url(#halo)" opacity=".85"/>
+  <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(335,48%,40%)" stroke-width="2.4" opacity=".9"/>
+  <use xlink:href="#tri" href="#tri" fill="url(#g335)"/>
+  <use xlink:href="#tri" href="#tri" fill="url(#hatch)"/>
+</g>
+<text y="70" text-anchor="middle" font-family="Caveat,'Snell Roundhand','Apple Chancery',cursive" font-size="26" fill="#3a3428" transform="rotate(-4)">близость</text>
+</g>
+
+<!-- игра -->
+<g transform="translate(552 268) rotate(-11)"><g transform="scale(122 106) translate(-.5 -.485)">
+  <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(25,55%,60%)" stroke-width="7" filter="url(#halo)" opacity=".85"/>
+  <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(25,48%,40%)" stroke-width="2.4" opacity=".9"/>
+  <use xlink:href="#tri" href="#tri" fill="url(#g25)"/>
+  <use xlink:href="#tri" href="#tri" fill="url(#hatch)"/>
+</g>
+<text y="73" text-anchor="middle" font-family="Caveat,'Snell Roundhand','Apple Chancery',cursive" font-size="26" fill="#3a3428" transform="rotate(5)">игра</text>
+</g>
+
+<!-- отдых · тело -->
+<g transform="translate(105 285) rotate(13)"><g transform="scale(112 97) translate(-.5 -.485)">
+  <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(150,55%,60%)" stroke-width="7" filter="url(#halo)" opacity=".85"/>
+  <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(150,48%,40%)" stroke-width="2.4" opacity=".9"/>
+  <use xlink:href="#tri" href="#tri" fill="url(#g150)"/>
+  <use xlink:href="#tri" href="#tri" fill="url(#hatch)"/>
+</g>
+<text y="68" text-anchor="middle" font-family="Caveat,'Snell Roundhand','Apple Chancery',cursive" font-size="25" fill="#3a3428" transform="rotate(-6)">отдых</text>
+</g>
+
+<!-- безопасность · покой -->
+<g transform="translate(88 128) rotate(-9)"><g transform="scale(98 85) translate(-.5 -.485)">
+  <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(215,55%,60%)" stroke-width="7" filter="url(#halo)" opacity=".85"/>
+  <use xlink:href="#tri" href="#tri" fill="none" stroke="hsl(215,48%,40%)" stroke-width="2.4" opacity=".9"/>
+  <use xlink:href="#tri" href="#tri" fill="url(#g215)"/>
+  <use xlink:href="#tri" href="#tri" fill="url(#hatch)"/>
+</g>
+<text y="60" text-anchor="middle" font-family="Caveat,'Snell Roundhand','Apple Chancery',cursive" font-size="22" fill="#3a3428" transform="rotate(4)">безопасность</text>
+</g>
+</svg>
