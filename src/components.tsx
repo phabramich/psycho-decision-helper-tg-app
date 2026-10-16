@@ -75,7 +75,7 @@ export function GroupMarks({ blobs }: { blobs: GBlob[] }) {
   );
 }
 
-// удержание ~0.4с без движения → зум слова; движение/отпуск — обычный жест
+// удержание ~0.8с без движения → зум слова; движение/отпуск — обычный жест
 export function useZoom() {
   const [zoom, setZoom] = useState<{ word: string; bg: string } | null>(null);
   const t = useRef<number | undefined>(undefined);
@@ -86,7 +86,7 @@ export function useZoom() {
     t.current = window.setTimeout(() => {
       onFire?.();
       setZoom({ word, bg });
-    }, 430);
+    }, 800);
   };
   const move = (x: number, y: number) => {
     if (p0.current && Math.hypot(x - p0.current.x, y - p0.current.y) > 9) clearTimeout(t.current);

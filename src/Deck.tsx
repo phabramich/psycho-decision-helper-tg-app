@@ -229,12 +229,16 @@ export function Deck({
               <div
                 className="ttri"
                 style={{ "--h": s.hue, transform: `rotate(${jit(s.word, "t", 16)}deg)` } as React.CSSProperties}
+              />
+              <div className="tlabel">{s.word}</div>
+              {/* овал: призма + зазор + серединка подписи тянутся, края ячейки — скролл */}
+              <div
+                className="tgrab"
                 onPointerDown={(e) => onDown(e, s)}
                 onPointerMove={onMove}
                 onPointerUp={onUp}
                 onPointerCancel={onCancel}
               />
-              <div className="tlabel">{s.word}</div>
             </div>
           ))}
           {spots.every((s) => placed.has(s.word)) && (

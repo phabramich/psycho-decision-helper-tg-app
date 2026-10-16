@@ -217,12 +217,16 @@ export function Lenses({
                   <div
                     className={`ltri ${tone}`}
                     style={{ transform: `rotate(${jit(s.word, "t", 16)}deg)` }}
+                  />
+                  <div className="tlabel">{s.word}</div>
+                  {/* овал: призма + зазор + серединка подписи тянутся, края ячейки — скролл */}
+                  <div
+                    className="tgrab"
                     onPointerDown={(e) => grab(e, s.word, tone)}
                     onPointerMove={onMove}
                     onPointerUp={onUp}
                     onPointerCancel={onCancel}
                   />
-                  <div className="tlabel">{s.word}</div>
                 </div>
               );
             })}
